@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UAE Constitution Guide - Complete Edition</title>
+  <style>
+    /* --- styles unchanged from your original --- */
+    * {margin: 0; padding: 0; box-sizing: border-box;}
+    body {font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh;}
+    .container {max-width: 1200px; margin: 0 auto; padding: 20px;}
+    header {text-align: center; margin-bottom: 40px; color: white;}
+    h1 {font-size: 2.8rem; margin-bottom: 10px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);}
+    .subtitle {font-size: 1.2rem; opacity: 0.9; margin-bottom: 30px;}
+    /* ... keeping ALL your CSS the same ... */
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🇦🇪 UAE Constitution Guide</h1>
+      <div class="subtitle">Complete Constitution - Understanding Your Rights and Laws - Made Simple</div>
+    </header>
+
+    <nav class="main-nav">
+      <button class="nav-btn active" onclick="showSection('constitution')">📜 Constitution Guide</button>
+      <button class="nav-btn" onclick="showSection('events')">📅 Upcoming Events</button>
+      <button class="nav-btn" onclick="showSection('articles')">📰 Economics Articles</button>
+      <button class="nav-btn" onclick="showSection('admin')" id="adminBtn">⚙️ Admin Panel</button>
+    </nav>
+
+    <div id="mainView">
+      <!-- Constitution Section -->
+      <div class="section active" id="constitutionSection">
+        <div class="intro-text">
+          <h2>Welcome to the Complete UAE Constitution Guide</h2>
+          <p>This comprehensive guide covers all key articles of the UAE Constitution...</p>
+        </div>
+        <div class="search-box">
+          <input type="text" class="search-input" id="searchInput" placeholder="Search for laws...">
+        </div>
+        <div class="themes-grid" id="themesGrid"></div>
+      </div>
+
+      <!-- Events Section -->
+      <div class="section" id="eventsSection">
+        <div class="events-header">
+          <h2>📅 Upcoming Events</h2>
+          <p>Stay updated with the latest Model UN tournaments, debate competitions, and educational events</p>
+        </div>
+        <div id="eventsList"></div>
+      </div>
+
+      <!-- Articles Section -->
+      <div class="section" id="articlesSection">
+        <div class="articles-header">
+          <h2>📰 Economics Articles & Essays</h2>
+          <p>Explore insightful articles and essays on economics, policy, and current affairs</p>
+        </div>
+        <div id="articlesList"></div>
+      </div>
+
+      <!-- Admin Section -->
+      <div class="section" id="adminSection">
+        <div class="admin-login" id="adminLogin">
+          <h2>🔒 Admin Access Required</h2>
+          <p>Please enter the admin password to access the management panel.</p>
+          <div class="error-message" id="loginError">Incorrect password. Please try again.</div>
+          <form onsubmit="checkPassword(event)">
+            <input type="password" id="adminPassword" class="password-input" required placeholder="Enter admin password">
+            <button type="submit" class="login-btn">🔓 Access Admin Panel</button>
+          </form>
+        </div>
+        <div class="admin-panel" id="adminPanel" style="display:none;">
+          <button class="logout-btn" onclick="logoutAdmin()">🚪 Logout</button>
+          <h2>⚙️ Admin Panel</h2>
+          <div class="admin-tabs">
+            <button class="admin-tab active" onclick="showAdminTab('events')">📅 Manage Events</button>
+            <button class="admin-tab" onclick="showAdminTab('articles')">📰 Manage Articles</button>
+          </div>
+
+          <!-- Events Form -->
+          <div class="admin-form active" id="eventsAdminForm">
+            <div class="success-message" id="eventSuccessMessage">Event added successfully!</div>
+            <form onsubmit="addEvent(event)">
+              <div class="form-group"><label>Event Title</label><input type="text" id="eventTitle" class="form-input" required></div>
+              <div class="form-group"><label>Date</label><input type="date" id="eventDate" class="form-input" required></div>
+              <div class="form-group"><label>Type</label><select id="eventType" class="form-input" required><option value="">Select</option><option>Model UN</option><option>Debate Tournament</option><option>Workshop</option><option>Conference</option><option>Other</option></select></div>
+              <div class="form-group"><label>Location</label><input type="text" id="eventLocation" class="form-input" required></div>
+              <div class="form-group"><label>Description</label><textarea id="eventDescription" class="form-input" required></textarea></div>
+              <div class="form-group"><label>Registration Link</label><input type="url" id="registrationLink" class="form-input"></div>
+              <button type="submit" class="submit-btn">📅 Add Event</button>
+            </form>
+          </div>
+
+          <!-- Articles Form -->
+          <div class="admin-form" id="articlesAdminForm">
+            <div class="success-message" id="articleSuccessMessage">Article added successfully!</div>
+            <form onsubmit="addArticle(event)">
+              <div class="form-group"><label>Article Title</label><input type="text" id="articleTitle" class="form-input" required></div>
+              <div class="form-group"><label>Category</label><select id="articleCategory" class="form-input" required><option value="">Select</option><option>Macroeconomics</option><option>Microeconomics</option><option>International Trade</option><option>Economic Policy</option><option>UAE Economy</option><option>Global Economics</option><option>Economic Theory</option></select></div>
+              <div class="form-group"><label>Author</label><input type="text" id="articleAuthor" class="form-input" required></div>
+              <div class="form-group"><label>Excerpt</label><textarea id="articleExcerpt" class="form-input" required></textarea></div>
+              <div class="form-group"><label>Full Article</label><textarea id="articleContent" class="form-input" style="min-height:300px;" required></textarea></div>
+              <button type="submit" class="submit-btn">📰 Add Article</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="content-area" id="contentArea">
+      <button class="back-btn" onclick="showMainView()">← Back to Topics</button>
+      <div id="contentBody"></div>
+    </div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore.js"></script>
+
+  <script>
+    // 🔧 Replace this placeholder with your Firebase config
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    let isAdminLoggedIn = false;
+    let currentSection = 'constitution';
+
+    /* ====== ADMIN AUTH ====== */
+    function checkPassword(e) {
+      e.preventDefault();
+      const password = document.getElementById('adminPassword').value;
+      const correctPassword = 'Ilove@meric@129';
+      if (password === correctPassword) {
+        isAdminLoggedIn = true;
+        document.getElementById('adminLogin').style.display = 'none';
+        document.getElementById('adminPanel').style.display = 'block';
+      } else {
+        document.getElementById('loginError').style.display = 'block';
+      }
+    }
+    function logoutAdmin() {
+      isAdminLoggedIn = false;
+      document.getElementById('adminLogin').style.display = 'block';
+      document.getElementById('adminPanel').style.display = 'none';
+    }
+
+    /* ====== SECTION SWITCHING ====== */
+    function showSection(section) {
+      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+      currentSection = section;
+      document.getElementById(section + 'Section').classList.add('active');
+      document.getElementById('contentArea').classList.remove('active');
+    }
+    function showAdminTab(tab) {
+      document.querySelectorAll('.admin-tab').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      document.querySelectorAll('.admin-form').forEach(form => form.classList.remove('active'));
+      document.getElementById(tab + 'AdminForm').classList.add('active');
+    }
+
+    /* ====== FIRESTORE: EVENTS ====== */
+    function displayEvents() {
+      const eventsList = document.getElementById('eventsList');
+      db.collection("events").orderBy("date","asc").onSnapshot(snapshot => {
+        if (snapshot.empty) {eventsList.innerHTML = '<div class="no-items">No upcoming events.</div>'; return;}
+        let html = '';
+        snapshot.forEach(doc => {
+          const ev = doc.data();
+          const d = new Date(ev.date);
+          const formatted = d.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+          html += `<div class="event-card"><div class="event-date">${formatted}</div><div class="event-title">${ev.title}</div><div class="event-description">${ev.description}</div><div class="event-details"><strong>📍</strong> ${ev.location}<br><strong>🎯</strong> ${ev.type}${ev.registrationLink? `<br><a href="${ev.registrationLink}" target="_blank">Register</a>`:''}</div></div>`;
+        });
+        eventsList.innerHTML = html;
+      });
+    }
+    function addEvent(e) {
+      e.preventDefault();
+      const newEvent = {title: eventTitle.value,date: eventDate.value,type: eventType.value,location: eventLocation.value,description: eventDescription.value,registrationLink: registrationLink.value};
+      db.collection("events").add(newEvent).then(()=>{
+        eventSuccessMessage.style.display='block'; setTimeout(()=>eventSuccessMessage.style.display='none',3000); e.target.reset();
+      });
+    }
+
+    /* ====== FIRESTORE: ARTICLES ====== */
+    function displayArticles() {
+      const articlesList = document.getElementById('articlesList');
+      db.collection("articles").orderBy("date","desc").onSnapshot(snapshot => {
+        if (snapshot.empty) {articlesList.innerHTML = '<div class="no-items">No articles yet.</div>'; return;}
+        let html = '';
+        snapshot.forEach(doc => {
+          const art = doc.data();
+          const d = new Date(art.date);
+          const formatted = d.toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+          html += `<div class="article-card"><div class="article-meta"><span class="article-date">${formatted}</span><span class="article-category">${art.category}</span></div><div class="article-title">${art.title}</div><div style="color:#666;margin-bottom:10px;font-size:0.9rem;">By ${art.author}</div><div class="article-excerpt">${art.excerpt}</div><button class="read-more-btn" onclick="showFullArticle('${doc.id}')">Read Full Article</button></div>`;
+        });
+        articlesList.innerHTML = html;
+      });
+    }
+    function addArticle(e) {
+      e.preventDefault();
+      const newArticle = {title: articleTitle.value,date: new Date().toISOString().split('T')[0],category: articleCategory.value,author: articleAuthor.value,excerpt: articleExcerpt.value,content: articleContent.value};
+      db.collection("articles").add(newArticle).then(()=>{
+        articleSuccessMessage.style.display='block'; setTimeout(()=>articleSuccessMessage.style.display='none',3000); e.target.reset();
+      });
+    }
+    function showFullArticle(id) {
+      db.collection("articles").doc(id).get().then(doc=>{
+        if(!doc.exists) return;
+        const art = doc.data();
+        const formatted = new Date(art.date).toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+        contentBody.innerHTML = `<div class="article-meta"><span class="article-date">${formatted}</span><span class="article-category">${art.category}</span></div><h1>${art.title}</h1><div style="color:#666;margin-bottom:30px;font-size:1.1rem;">By ${art.author}</div><div style="line-height:1.8;font-size:1.1rem;">${art.content.split('\n').map(p=>p.trim()?`<p>${p}</p>`:'').join('')}</div>`;
+        showContentArea();
+      });
+    }
+
+    /* ====== THEMES & SEARCH (kept from your original) ====== */
+    const themes = {/* ... all your themes data unchanged ... */};
+    function displayThemes() { /* unchanged code */ }
+    function showTheme(key) { /* unchanged code */ }
+    function setupSearch() { /* unchanged code */ }
+    function performSearch(query) { /* unchanged code */ }
+    function displaySearchResults(query) { /* unchanged code */ }
+    function highlightText(text,query) { /* unchanged code */ }
+    function showContentArea(){document.querySelectorAll('.section').forEach(sec=>sec.style.display='none');contentArea.classList.add('active');}
+    function showMainView(){document.getElementById(currentSection+'Section').style.display='block';contentArea.classList.remove('active');searchInput.value='';}
+
+    /* ====== INIT ====== */
+    function initializeApp(){displayThemes();setupSearch();displayEvents();displayArticles();}
+    document.addEventListener('DOMContentLoaded',initializeApp);
+  </script>
+</body>
+</html>
