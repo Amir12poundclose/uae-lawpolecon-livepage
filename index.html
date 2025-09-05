@@ -1469,8 +1469,451 @@
         }
 
         // Initialize the app when page loads
+        document.addEventListener('DOMContentLoaded', initializeApp);    
+  async function loadEventsFromSupabase() {
+            try {
+                const { data, error } = await supabase
+                    .from('events')
+                    .select('*')
+                    .order('date', { ascending: true });
+                
+                if (error) throw error;
+                
+                events = data || [];
+                displayEvents();
+            } catch (error) {
+                console.error('Error loading events:', error);
+                document.getElementById('eventsList').innerHTML = 
+                    '<div class="no-items">Error loading events. Please try again later.</div>';
+            }
+        }
+
+        async function loadArticlesFromSupabase() {
+            try {
+                const { data, error } = await supabase
+                    .from('articles')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+                
+                if (error) throw error;
+                
+                articles = data || [];
+                displayArticles();
+            } catch (error) {
+                console.error('Error loading articles:', error);
+                document.getElementById('articlesList').innerHTML = 
+                    '<div class="no-items">Error loading articles. Please try again later.</div>';
+            }
+        }
+
+        async function saveEventToSupabase(eventData) {
+            try {
+                const { data, error } = await supabase
+                    .from('events')
+                    .insert([eventData])
+                    .select();
+                
+                if (error) throw error;
+                
+                return data[0];
+            } catch (error) {
+                console.error('Error saving event:', error);
+                throw error;
+            }
+        }
+
+        async function saveArticleToSupabase(articleData) {
+            try {
+                const { data, error } = await supabase
+                    .from('articles')
+                    .insert([articleData])
+                    .select();
+                
+                if (error) throw error;
+                
+                return data[0];
+            } catch (error) {
+                console.error('Error saving article:', error);
+                throw error;
+            }
+        }
+
+        function initializeApp() {
+            displayThemes();
+            setupSearch();
+            loadEventsFromSupabase();
+            loadArticlesFromSupabase();
+        }
+
+        function checkPassword(e) {
+            e.preventDefault();
+            const password = document.getElementById('adminPassword').value;
+            const correctPassword = 'Ilove@meric@129';
+            
+            if (password === correctPassword) {
+                isAdminLoggedIn = true;
+                document.getElementById('adminLogin').style.display = 'none';
+                document.getElementById('adminPanel').style.display = 'block';
+                document.getElementById('loginError').style.display = 'none';
+                document.getElementById('adminPassword').value = '';
+            } else {
+                document.getElementById('loginError').style.display = 'block';
+                document.getElementById('adminPassword').value = '';
+                document.getElementById('adminPassword').focus();
+            }
+        }
+
+        function logoutAdmin() {
+            isAdminLoggedIn = false;
+            document.getElementById('adminLogin').style.display = 'block';
+            document.getElementById('adminPanel').style.display = 'none';
+            document.getElementById('loginError').style.display = 'none';
+            document.getElementById('adminPassword').value = '';
+        }
+
+        function showSection(section) {
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+            
+            currentSection = section;
+            if (section === 'constitution') {
+                document.getElementById('constitutionSection').classList.add('active');
+            } else if (section === 'events') {
+                document.getElementById('eventsSection').classList.add('active');
+                if (events.length === 0) loadEventsFromSupabase();
+            } else if (section === 'articles') {
+                document.getElementById('articlesSection').classList.add('active');
+                if (articles.length === 0) loadArticlesFromSupabase();
+            } else if (section === 'admin') {
+                document.getElementById('adminSection').classList.add('active');
+                if (!isAdminLoggedIn) {
+                    document.getElementById('adminLogin').style.display = 'block';
+                    document.getElementById('adminPanel').style.display = 'none';
+                }
+            }
+            
+            document.getElementById('contentArea').classList.remove('active');
+        }
+
+        function displayEvents() {
+            const eventsList = document.getElementById('eventsList');
+            
+            if (events.length === 0) {
+                eventsList.innerHTML = '<div class="no-items">No upcoming events at the moment. Check back soon!</div>';
+                return;
+            }
+            
+            let html = '';
+            events.forEach(event => {
+                const eventDate = new Date(event.date);
+                const formattedDate = eventDate.toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+                
+                html += `
+                    <div class="event-card">
+                        <div class="event-date">${formattedDate}</div>
+                        <div class="event-title">${event.title}</div>
+                        <div class="event-description">${event.description}</div>
+                        <div class="event-details">
+                            <strong>📍 Location:</strong> ${event.location}<br>
+                            <strong>🎯 Type:</strong> ${event.type}
+                            ${event.registration_link ? `<br><strong>📝 Registration:</strong> <a href="${event.registration_link}" target="_blank">Register Here</a>` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            eventsList.innerHTML = html;
+        }
+
+        function displayArticles() {
+            const articlesList = document.getElementById('articlesList');
+            
+            if (articles.length === 0) {
+                articlesList.innerHTML = '<div class="no-items">No articles published yet. Check back soon for insightful economics content!</div>';
+                return;
+            }
+            
+            let html = '';
+            articles.forEach(article => {
+                const articleDate = new Date(article.date);
+                const formattedDate = articleDate.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+                
+                html += `
+                    <div class="article-card">
+                        <div class="article-meta">
+                            <span class="article-date">${formattedDate}</span>
+                            <span class="article-category">${article.category}</span>
+                        </div>
+                        <div class="article-title">${article.title}</div>
+                        <div style="color: #666; margin-bottom: 10px; font-size: 0.9rem;">By ${article.author}</div>
+                        <div class="article-excerpt">${article.excerpt}</div>
+                        <button class="read-more-btn" onclick="showFullArticle(${article.id})">Read Full Article</button>
+                    </div>
+                `;
+            });
+            
+            articlesList.innerHTML = html;
+        }
+
+        function showFullArticle(articleId) {
+            const article = articles.find(a => a.id === articleId);
+            if (!article) return;
+            
+            const contentBody = document.getElementById('contentBody');
+            const formattedDate = new Date(article.date).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            
+            contentBody.innerHTML = `
+                <div class="article-meta" style="margin-bottom: 20px;">
+                    <span class="article-date">${formattedDate}</span>
+                    <span class="article-category">${article.category}</span>
+                </div>
+                <h1>${article.title}</h1>
+                <div style="color: #666; margin-bottom: 30px; font-size: 1.1rem;">By ${article.author}</div>
+                <div style="line-height: 1.8; font-size: 1.1rem;">
+                    ${article.content.split('\n').map(paragraph => 
+                        paragraph.trim() ? `<p style="margin-bottom: 20px;">${paragraph}</p>` : ''
+                    ).join('')}
+                </div>
+            `;
+            
+            showContentArea();
+        }
+
+        function showAdminTab(tab) {
+            document.querySelectorAll('.admin-tab').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            document.querySelectorAll('.admin-form').forEach(form => form.classList.remove('active'));
+            if (tab === 'events') {
+                document.getElementById('eventsAdminForm').classList.add('active');
+            } else if (tab === 'articles') {
+                document.getElementById('articlesAdminForm').classList.add('active');
+            }
+        }
+
+        async function addEvent(e) {
+            e.preventDefault();
+            
+            try {
+                const eventData = {
+                    title: document.getElementById('eventTitle').value,
+                    date: document.getElementById('eventDate').value,
+                    type: document.getElementById('eventType').value,
+                    location: document.getElementById('eventLocation').value,
+                    description: document.getElementById('eventDescription').value,
+                    registration_link: document.getElementById('registrationLink').value
+                };
+                
+                const savedEvent = await saveEventToSupabase(eventData);
+                events.unshift(savedEvent);
+                displayEvents();
+                
+                const successMsg = document.getElementById('eventSuccessMessage');
+                successMsg.style.display = 'block';
+                setTimeout(() => {
+                    successMsg.style.display = 'none';
+                }, 3000);
+                
+                e.target.reset();
+            } catch (error) {
+                alert('Error adding event. Please try again.');
+                console.error('Error adding event:', error);
+            }
+        }
+
+        async function addArticle(e) {
+            e.preventDefault();
+            
+            try {
+                const articleData = {
+                    title: document.getElementById('articleTitle').value,
+                    date: new Date().toISOString().split('T')[0],
+                    category: document.getElementById('articleCategory').value,
+                    author: document.getElementById('articleAuthor').value,
+                    excerpt: document.getElementById('articleExcerpt').value,
+                    content: document.getElementById('articleContent').value
+                };
+                
+                const savedArticle = await saveArticleToSupabase(articleData);
+                articles.unshift(savedArticle);
+                displayArticles();
+                
+                const successMsg = document.getElementById('articleSuccessMessage');
+                successMsg.style.display = 'block';
+                setTimeout(() => {
+                    successMsg.style.display = 'none';
+                }, 3000);
+                
+                e.target.reset();
+            } catch (error) {
+                alert('Error adding article. Please try again.');
+                console.error('Error adding article:', error);
+            }
+        }
+
+        function displayThemes() {
+            const grid = document.getElementById('themesGrid');
+            grid.innerHTML = '';
+            
+            Object.entries(themes).forEach(([key, theme]) => {
+                const card = document.createElement('div');
+                card.className = 'theme-card';
+                card.onclick = () => showTheme(key);
+                
+                card.innerHTML = `
+                    <div class="theme-icon">${theme.icon}</div>
+                    <div class="theme-title">${theme.title}</div>
+                    <div class="theme-desc">${theme.desc}</div>
+                `;
+                
+                grid.appendChild(card);
+            });
+        }
+
+        function showTheme(themeKey) {
+            const theme = themes[themeKey];
+            const contentBody = document.getElementById('contentBody');
+            
+            let html = `<h2>${theme.icon} ${theme.title}</h2>`;
+            
+            theme.laws.forEach(law => {
+                html += `
+                    <div class="law-item">
+                        <div class="law-number">${law.number}</div>
+                        <div class="law-title">${law.title}</div>
+                        <div class="law-simple">
+                            <h4>📝 What this means in simple words:</h4>
+                            <p>${law.simple}</p>
+                        </div>
+                        <div class="law-example">
+                            <h4>💡 Real-life example:</h4>
+                            <p>${law.example}</p>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            contentBody.innerHTML = html;
+            showContentArea();
+        }
+
+        function setupSearch() {
+            const searchInput = document.getElementById('searchInput');
+            searchInput.addEventListener('input', (e) => {
+                const query = e.target.value.toLowerCase().trim();
+                if (query.length === 0) {
+                    showMainView();
+                    return;
+                }
+                
+                if (query.length >= 2) {
+                    performSearch(query);
+                }
+            });
+        }
+
+        function performSearch(query) {
+            currentSearchResults = [];
+            
+            Object.entries(themes).forEach(([themeKey, theme]) => {
+                theme.laws.forEach(law => {
+                    const searchText = `${law.title} ${law.simple} ${law.example} ${theme.title}`.toLowerCase();
+                    if (searchText.includes(query)) {
+                        currentSearchResults.push({
+                            theme: theme,
+                            law: law,
+                            themeKey: themeKey
+                        });
+                    }
+                });
+            });
+
+            displaySearchResults(query);
+        }
+
+        function displaySearchResults(query) {
+            const contentBody = document.getElementById('contentBody');
+            
+            if (currentSearchResults.length === 0) {
+                contentBody.innerHTML = `
+                    <div class="no-results">
+                        <h3>No results found for "${query}"</h3>
+                        <p>Try searching for terms like "privacy", "freedom", "property", "work", or "family"</p>
+                    </div>
+                `;
+            } else {
+                let html = `<h2>🔍 Search Results for "${query}" (${currentSearchResults.length} found)</h2>`;
+                
+                currentSearchResults.forEach(result => {
+                    const highlightedTitle = highlightText(result.law.title, query);
+                    const highlightedSimple = highlightText(result.law.simple, query);
+                    const highlightedExample = highlightText(result.law.example, query);
+                    
+                    html += `
+                        <div class="law-item">
+                            <div style="color: #667eea; font-size: 0.9rem; margin-bottom: 5px;">${result.theme.icon} ${result.theme.title}</div>
+                            <div class="law-number">${result.law.number}</div>
+                            <div class="law-title">${highlightedTitle}</div>
+                            <div class="law-simple">
+                                <h4>📝 What this means in simple words:</h4>
+                                <p>${highlightedSimple}</p>
+                            </div>
+                            <div class="law-example">
+                                <h4>💡 Real-life example:</h4>
+                                <p>${highlightedExample}</p>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                contentBody.innerHTML = html;
+            }
+            
+            showContentArea();
+        }
+
+        function highlightText(text, query) {
+            const regex = new RegExp(`(${query})`, 'gi');
+            return text.replace(regex, '<span class="highlight">$1</span>');
+        }
+
+        function showContentArea() {
+            document.querySelectorAll('.section').forEach(sec => sec.style.display = 'none');
+            document.getElementById('contentArea').classList.add('active');
+        }
+
+        function showMainView() {
+            if (currentSection === 'constitution') {
+                document.getElementById('constitutionSection').style.display = 'block';
+            } else if (currentSection === 'events') {
+                document.getElementById('eventsSection').style.display = 'block';
+            } else if (currentSection === 'articles') {
+                document.getElementById('articlesSection').style.display = 'block';
+            } else if (currentSection === 'admin') {
+                document.getElementById('adminSection').style.display = 'block';
+            }
+            
+            document.getElementById('contentArea').classList.remove('active');
+            document.getElementById('searchInput').value = '';
+            currentSearchResults = [];
+        }
+
         document.addEventListener('DOMContentLoaded', initializeApp);
     </script>
 </body>
 </html>
-
